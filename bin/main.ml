@@ -1,2 +1,2 @@
 
-let () = OCamLox.Lexer.runFile "./bin/dune"
+let () = OCamLox.Utils.runFile "./bin/dune"
