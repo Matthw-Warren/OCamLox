@@ -1,0 +1,4 @@
+(executable
+ (public_name OCamLox)
+ (name main)
+ (libraries OCamLox))
