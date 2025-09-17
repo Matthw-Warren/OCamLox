@@ -1,4 +1,5 @@
 (library
  (name OCamLox)
- (libraries )
+ (modules lexer token utils errorHandling)
+ (preprocess (pps ppx_deriving.show))
 )
