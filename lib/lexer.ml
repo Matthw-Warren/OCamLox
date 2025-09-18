@@ -25,11 +25,18 @@ let peek scanner =
   |None -> '\x00'
   |Some c -> c
 
+let peek_next scanner =
+  if (scanner.current +1 ) >= String.length scanner.source then None
+  else Some (String.get scanner.source (scanner.current +1))  
+
+let increment_line scanner = {scanner with line = scanner.line +1}
+
 
 let add_token scanner t = 
   let new_token = {token_type = t; 
   lexeme = String.sub scanner.source scanner.start (scanner.current - scanner.start);
   line = scanner.line;
+  literal = Lit.create_LNil ()
     } in
   {scanner with token_list = List.append scanner.token_list [new_token]}
 
@@ -57,9 +64,77 @@ let add_comment scanner =
   else add_token scanner Slash
 
 
-
-
+exception UnclosedString
+exception UnexpectedCharacter of char * int
 exception UnknownCharacter of char * int
+
+
+let rec scan_string scanner =
+  let c = get_char scanner in 
+  match c with 
+  |None -> raise UnclosedString
+  |Some c -> 
+    match c with
+    | '"' ->  advance_scanner scanner
+    | '\n' -> scan_string (advance_scanner (increment_line scanner))
+    | _ -> scan_string (advance_scanner scanner)
+
+let add_string scanner = 
+  let scanner = scan_string scanner in
+  let stringliteral = String.sub scanner.source (scanner.start +1) (scanner.current - scanner.start -2) in 
+  let tok = {token_type = String;
+   lexeme = stringliteral;
+    line = scanner.line;
+    literal = Lit.create_LString stringliteral} in 
+  {scanner with token_list = List.append scanner.token_list [tok]}
+  
+
+let is_digit = function '0' .. '9' -> true | _ -> false
+let is_alpha = function 'a' .. 'z' | 'A' .. 'Z'  | '_'-> true | _ -> false
+
+let is_alphanum x = is_digit x || is_alpha x
+
+
+
+
+
+let rec scan_num scanner = 
+  let c = get_char scanner in 
+  match c with
+  |None| Some ' '| Some '\n' -> scanner
+  |Some '.' -> 
+  let dotcase scanner = 
+    match peek_next scanner with
+    |None -> raise (UnexpectedCharacter ('.', scanner.line))
+    |Some x when (is_digit x || x = ' ' || x = '\n') -> scan_num( advance_scanner scanner)
+    |Some x -> raise (UnexpectedCharacter (x, scanner.line))
+  in dotcase scanner
+  |Some c when is_digit c -> scan_num (advance_scanner scanner)
+  |Some c -> raise (UnexpectedCharacter (c, scanner.line))
+
+let add_num scanner = 
+  let scanner = scan_num scanner in
+  let numstring = String.sub scanner.source (scanner.start) (scanner.current - scanner.start) 
+    in let tok = {token_type = Number; lexeme=  numstring; 
+    line = scanner.line; literal= Lit.create_LNum (float_of_string numstring)}
+  in {scanner with token_list = List.append scanner.token_list [tok]}
+
+
+let rec scan_word scanner = 
+  let c = get_char scanner in 
+  match c with
+  | Some ' '|  Some '\n' | None -> scanner
+  | Some x when is_alpha x -> scan_word (advance_scanner scanner)
+  | Some c -> raise (UnexpectedCharacter (c, scanner.line))
+
+let add_word scanner = 
+  let scanner = scan_word scanner in
+  let word_string = String.sub scanner.source (scanner.start) (scanner.current - scanner.start) in
+  let token = {token_type = map_keyword word_string; lexeme = word_string; 
+    line = scanner.line; literal  = Lit.create_LNil () } in
+  {scanner with token_list = List.append scanner.token_list [token]}
+
+
 
 let scanToken scanner = 
   let currchar = get_char scanner in 
@@ -91,13 +166,17 @@ let scanToken scanner =
       else add_token scanner Greater
     | '/' ->  add_comment scanner
     | ' '| '\r' | '\t' -> scanner
-    | '\n' -> {scanner with line = scanner.line + 1 }
+    | '\n' ->  increment_line scanner
+    | '"' -> add_string scanner
+    | c when (is_digit c || c = '.') -> add_num scanner
+    | c when (is_alpha c || c = '_') -> add_word scanner
     | c -> raise (UnknownCharacter (c,scanner.line)) )
 
 
 let rec scanTokens scanner = 
   if scanner_at_end scanner then 
-    let tokenlist = List.append scanner.token_list [{token_type = Eof; lexeme = ""; line = scanner.line}] in 
+    let tokenlist = List.append scanner.token_list [{token_type = Eof;
+   lexeme = ""; line = scanner.line ; literal = Lit.create_LNil () } ] in 
   {scanner with token_list = tokenlist}
   else let scanner = {scanner with start = scanner.current} in 
   scanTokens (scanToken scanner)
