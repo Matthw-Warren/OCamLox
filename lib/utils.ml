@@ -1,4 +1,5 @@
-let run source = print_endline source
+let run source = let scanner = Lexer.init_scanner source in 
+  Lexer.scanTokens scanner 
 
 let runFile path = 
   let inchannel = open_in path in
@@ -13,7 +14,7 @@ let rec repl s =
   if 
     String.length line = 0 then s 
   else  if  String.ends_with ~suffix:";;" line then
-    s^ "\n" ^ line
+    s^ "\n" ^ String.sub line 0 (String.length line -2)
   else
     repl (s ^ "\n" ^ line);; 
 

@@ -62,5 +62,15 @@ let opt = List.find_opt (fun (str, _ ) -> (s = str) ) keywords in
 
 
 
+
+
 let token_to_string tok = 
   "Type: " ^ show_tokenType tok.token_type ^ " Lexeme: " ^ tok.lexeme ^ " on line: " ^ string_of_int tok.line 
+
+
+let print_tokens tokens = let string_list = List.map token_to_string tokens in 
+  let rec print_list l  = 
+  match l with
+  | [] -> print_endline ""
+  | s::tl -> print_endline (s ^ "\n"); print_list tl;
+  in print_list string_list
