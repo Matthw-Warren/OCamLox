@@ -124,8 +124,8 @@ let rec scan_word scanner =
   let c = get_char scanner in 
   match c with
   | Some ' '|  Some '\n' | None -> scanner
-  | Some x when is_alpha x -> scan_word (advance_scanner scanner)
-  | Some c -> raise (UnexpectedCharacter (c, scanner.line))
+  | Some x when is_alphanum x -> scan_word (advance_scanner scanner)
+  | Some c -> raise (UnexpectedCharacter (c, scanner.current))
 
 let add_word scanner = 
   let scanner = scan_word scanner in
