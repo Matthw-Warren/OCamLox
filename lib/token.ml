@@ -1,5 +1,10 @@
 module Lit : sig
-  type l
+  type l =
+  |LBool of bool 
+  |LInt of int
+  |LNum of float
+  |LString of string
+  |LNil
   val lit_to_string : l -> string
   val create_LNil : unit -> l
   val create_LInt : int -> l
