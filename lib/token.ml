@@ -62,8 +62,6 @@ let opt = List.find_opt (fun (str, _ ) -> (s = str) ) keywords in
 
 
 
-
-
 let token_to_string tok = 
   "Type: " ^ show_tokenType tok.token_type ^ " Lexeme: " ^ tok.lexeme ^ " on line: " ^ string_of_int tok.line 
 
