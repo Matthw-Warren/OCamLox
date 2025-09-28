@@ -1,3 +1,4 @@
 (test
  (name test_OCamLox)
+ (libraries OCamLox)
  )

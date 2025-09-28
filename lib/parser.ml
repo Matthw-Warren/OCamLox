@@ -1,46 +1,20 @@
-(*Note that the records indeed capture our associativity rules!
- - left can  be factor -
- whereas right can only be unary
-This is the left associativity of  * and / *)
-
-(*So this type is just faithfully representing what is going on in the CFG.
-We actually implement these rules using our parser functions below (just as we 
-implement the ideas of Regular languages and such with our lexer - we dont explicitly 
-need a class for the possible strings in the langauge defined by a Regex.)*)
-
-type expression = Equality of equality 
-
-and equality = Comparison of comparison
-| EqualityExp of {operator : Token.tokenType ; left : equality ; right : comparison}
-
-and comparison = Term of term 
-| ComparisonExp of {operator: Token.tokenType; left : comparison; right : term }
-
-and term = Factor of factor 
-| TermExp of {operator: Token.tokenType ; left: term; right:factor}
-
-and factor = Unary of unary 
-| FactorExp of {operator: Token.tokenType; left : factor ; right : unary }
-
-and unary = Primary of primary 
-|UnaryExp of {symbol : Token.tokenType; unary : unary}
-
-and primary = Literal of Token.Lit.l | Brackets of expression
-
-
-(* The problem here is that if I want to define the expression "1" 
-  (ie. the literal int)
-  Then I have the construct this as 
-Equalilty Comparison Term Factor Unary Literal 1 
-While this is what we're actually doing in the derivation 
-- this is quite tedious!? - but perhaps worth it!*)
 
 exception TokenListExceeded
-
+exception UnexpectedToken of Token.tokenType
 
 type parser = {tokens : Token.token list ; current :int}
 
+
+
+
+let init_parser tokens = {tokens ; current =0}
+
+(*Surely a more efficeint way to do this - use list structure 
+- will return to*)
+
+
 let get_token parser = List.nth parser.tokens parser.current
+ 
 
 let get_token_type parser = let t = get_token parser in t.token_type
 
@@ -55,19 +29,116 @@ let check_token_type parser token_type = if at_end parser then false
 else (get_token_type parser) = token_type
 
 
+let munch parser token_type = let c = get_token_type parser in 
+if token_type = c then advance_parser parser
+else raise (UnexpectedToken c)
 
 
-(*Ah - the CFG being ambiguous is simply a way of defining rigorously HOW we parse
-our token string - the code implements this and returns an AST - I see.
-Our aim is to create an AST from our token list.*)
+let raise_parser_error token message= 
+  ErrorHandling.report_error token message
 
 
-let rec get_comparison_ast parser = Ast.Literal.Token.Lit.LBool true
+let rec rec_sync parser = 
+  if at_end parser then parser
+  else if ((get_previous parser).token_type = Token.Semicolon) then parser
+  else let open Token in 
+  let t = get_token_type parser in
+  match t with 
+  | Class | Fun | Var | For | If | While | Print | Return -> parser
+  | _ -> rec_sync (advance_parser parser)
 
-let rec get_eq_ast parser exp = let c = get_token_type parser in 
+
+
+
+
+let rec get_ast parser = get_eq_ast parser
+
+and get_eq_ast parser = 
+  let (left, parser) = get_comparison_ast parser in 
+  get_eq_ast_rec parser left
+
+and get_eq_ast_rec parser left =
+  let c = get_token_type parser in 
+    match c with 
+    | Token.Equal_equal  | Token.Not_Equal -> 
+      let parser = advance_parser parser in
+      let (right , parser ) = get_comparison_ast parser in 
+      let new_left = Ast.Binary {operator = c; left = left; right = right} in
+      get_eq_ast_rec parser new_left
+    | _ -> (left,parser) 
+
+and get_comparison_ast parser = 
+  let (left, parser) = get_term_ast parser in 
+  get_comparison_ast_rec parser left
+
+and get_comparison_ast_rec parser left = 
+  let c = get_token_type parser in 
   match c with 
-  | Token.Equal_equal  | Token.Not_Equal -> 
-  | _ -> 
+  |Token.Greater| Token.Greater_equal | Token.Less | Token.Less_equal ->
+    let parser = advance_parser parser in
+    let (right, parser) =  get_term_ast parser in 
+    let new_left = Ast.Binary {operator = c; left = left; right = right} in
+    get_comparison_ast_rec parser new_left
+  | _ -> (left,parser)
 
-let get_ast parser = c_equality parser
+and get_term_ast parser = 
+  let (left,parser)  = get_factor_ast parser in
+  get_term_ast_rec parser left  
+
+and get_term_ast_rec parser left = 
+  let c = get_token_type parser in 
+  match c with
+  |Token.Plus | Token.Minus -> 
+  let parser = advance_parser parser in
+  let (right, parser) = get_factor_ast parser in 
+  let new_left = Ast.Binary {operator = c; left = left; right = right} in
+  get_term_ast_rec parser new_left
+  | _ -> (left, parser)
+
+and get_factor_ast parser = 
+  let (left,parser)  = get_unary_ast_rec parser in
+  get_factor_ast_rec parser left  
+
+and get_factor_ast_rec parser left = 
+  let c = get_token_type parser in 
+  match c with
+  |Token.Slash | Token.Asterix -> 
+  let parser = advance_parser parser in
+  let (right, parser) = get_unary_ast_rec parser in 
+  let new_left = Ast.Binary {operator = c; left = left; right = right} in
+  get_factor_ast_rec parser new_left
+  | _ -> (left, parser)
+ 
+and get_unary_ast_rec parser = 
+  let c = get_token_type parser in 
+  match c with 
+  | Token.Minus | Token.Not ->   
+  let parser = advance_parser parser in
+  let (right,parser)  = get_unary_ast_rec parser in 
+ ( Ast.Unary {symbol = c ; operand  = right}, parser)
+ | _ -> get_primary_ast parser 
+
+and get_primary_ast parser  =
+  let c = get_token_type parser in
+  let parser = advance_parser parser in 
+  match c with 
+  | Token.False -> (Ast.Literal (Token.Lit.LBool false), parser)
+  | Token.True -> (Ast.Literal (Token.Lit.LBool true), parser)
+  | Token.Nil -> (Ast.Literal Token.Lit.LNil, parser)
+  
+  | Token.Number | Token.String -> let t = get_previous parser in 
+    let l = t.literal in (Ast.Literal l, parser)
+  | Token.Left_bracket -> 
+    let (exp, parser) = get_ast parser in 
+    let parser = munch parser Token.Right_bracket in
+      (Ast.Grouping exp, parser) 
+
+  |_ -> (Ast.Literal Token.Lit.LNil ,parser)
+
+
+
+
+let get_ast_exp parser = let (a,_) = get_ast parser in a
+
+
 

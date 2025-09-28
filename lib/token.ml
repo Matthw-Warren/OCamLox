@@ -41,8 +41,8 @@ type tokenType = (*Begin with single char ones*) |Left_bracket
 |Equal_equal | Greater | Greater_equal
 |Less | Less_equal
 (*Literals*) |Identifier  | String | Number 
-(*Keywords*)|And | Class | Else | False | Fun| If | Nil | Or 
-|Print | Return | Super | This | True | Var | While |Eof
+(*Keywords*)|And | Class | Else | False | For | Fun| If | Nil | Or 
+|Print | Return | Super | This | True | Var | While |Eof 
 [@@deriving show]
 
 type token = {
