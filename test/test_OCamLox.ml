@@ -1,7 +1,8 @@
 
-let source = "( 2 - 1 ) * 3 == true"
+let source = "\"testing\" - ( 2 - 1 ) * 3 == true"
 
 let s = OCamLox.Lexer.init_scanner source
+
 
 let s = OCamLox.Lexer.scanTokens s
 

@@ -5,8 +5,6 @@ exception UnexpectedToken of Token.tokenType
 type parser = {tokens : Token.token list ; current :int}
 
 
-
-
 let init_parser tokens = {tokens ; current =0}
 
 (*Surely a more efficeint way to do this - use list structure 
@@ -22,7 +20,7 @@ let get_previous parser = List.nth parser.tokens (parser.current -1)
 
 let at_end parser = (get_token_type parser) = Token.Eof
 
-let advance_parser parser = if at_end parser then raise TokenListExceeded 
+let advance_parser parser = if at_end parser then raise TokenListExceeded
 else {parser with current = parser.current +1 }
 
 let check_token_type parser token_type = if at_end parser then false
@@ -133,12 +131,24 @@ and get_primary_ast parser  =
     let parser = munch parser Token.Right_bracket in
       (Ast.Grouping exp, parser) 
 
-  |_ -> (Ast.Literal Token.Lit.LNil ,parser)
-
+  |_ -> let token = get_previous parser in raise
+    (ErrorHandling.parse_error token "Unexpected Token in parse")
 
 
 
 let get_ast_exp parser = let (a,_) = get_ast parser in a
 
 
+let rec synchronise parser = let open Token in  
+    let parser = advance_parser parser in 
+    if (get_previous parser).token_type = Semicolon then parser
+    else match get_token_type parser with
+    | Class | Fun | Var | For | If | While | Print | Return -> parser
+    | _ -> synchronise parser
 
+
+
+let parse tokens = let open ErrorHandling in
+   let parser = init_parser tokens in 
+    try (get_ast_exp parser)
+    with ParseError _ -> Ast.Literal Token.Lit.LNil

@@ -8,6 +8,11 @@ type scanner = {
   line: int;
 }
 
+exception UnclosedString
+exception UnexpectedCharacter of char * int
+exception UnknownCharacter of char * int
+
+
 let init_scanner source = {source; token_list = []; start= 0;
  current = 0; line =1;
 }
@@ -64,9 +69,6 @@ let add_comment scanner =
   else add_token scanner Slash
 
 
-exception UnclosedString
-exception UnexpectedCharacter of char * int
-exception UnknownCharacter of char * int
 
 
 let rec scan_string scanner =
