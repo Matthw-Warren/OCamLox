@@ -36,18 +36,6 @@ let raise_parser_error token message=
   ErrorHandling.report_error token message
 
 
-let rec rec_sync parser = 
-  if at_end parser then parser
-  else if ((get_previous parser).token_type = Token.Semicolon) then parser
-  else let open Token in 
-  let t = get_token_type parser in
-  match t with 
-  | Class | Fun | Var | For | If | While | Print | Return -> parser
-  | _ -> rec_sync (advance_parser parser)
-
-
-
-
 
 let rec get_ast parser = get_eq_ast parser
 
@@ -120,9 +108,9 @@ and get_primary_ast parser  =
   let c = get_token_type parser in
   let parser = advance_parser parser in 
   match c with 
-  | Token.False -> (Ast.Literal (Token.Lit.LBool false), parser)
-  | Token.True -> (Ast.Literal (Token.Lit.LBool true), parser)
-  | Token.Nil -> (Ast.Literal Token.Lit.LNil, parser)
+  | Token.False -> (Ast.Literal (Lit.LBool false), parser)
+  | Token.True -> (Ast.Literal (Lit.LBool true), parser)
+  | Token.Nil -> (Ast.Literal Lit.LNil, parser)
   
   | Token.Number | Token.String -> let t = get_previous parser in 
     let l = t.literal in (Ast.Literal l, parser)
@@ -139,7 +127,8 @@ and get_primary_ast parser  =
 let get_ast_exp parser = let (a,_) = get_ast parser in a
 
 
-let rec synchronise parser = let open Token in  
+let rec synchronise parser = let open Token in 
+    if at_end parser then parser else 
     let parser = advance_parser parser in 
     if (get_previous parser).token_type = Semicolon then parser
     else match get_token_type parser with
@@ -148,7 +137,8 @@ let rec synchronise parser = let open Token in
 
 
 
+
 let parse tokens = let open ErrorHandling in
    let parser = init_parser tokens in 
     try (get_ast_exp parser)
-    with ParseError _ -> Ast.Literal Token.Lit.LNil
+    with ParseError _ -> Ast.Literal Lit.LNil

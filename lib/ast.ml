@@ -3,7 +3,7 @@
  we could just use Token.token as our types here*)
 
 type ast = 
-| Literal of Token.Lit.l
+| Literal of Lit.l
 | Unary of {symbol : Token.tokenType ; operand: ast }
 | Binary of {left: ast; operator : Token.tokenType ; right : ast}
 | Grouping of ast
@@ -33,8 +33,8 @@ let rec expression_to_string e = let open Token in
 
 
 (* 
-let a = Unary {symbol = Minus ; operand = Literal (Token.Lit.LNum 2.)}
-let b = Grouping (Binary {left = Literal (Token.Lit.LNum 3.); operator = Token.Plus ; right = Literal (Token.Lit.LNum 4.)})
+let a = Unary {symbol = Minus ; operand = Literal (Lit.LNum 2.)}
+let b = Grouping (Binary {left = Literal (Lit.LNum 3.); operator = Token.Plus ; right = Literal (Lit.LNum 4.)})
 
 let c = Binary {left = a; operator = Token.Asterix ; right = b}
 

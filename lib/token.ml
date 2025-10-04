@@ -1,41 +1,6 @@
-module Lit : sig
-  type l =
-  |LBool of bool 
-  |LInt of int
-  |LNum of float
-  |LString of string
-  |LNil
-  val lit_to_string : l -> string
-  val create_LNil : unit -> l
-  val create_LInt : int -> l
-  val create_LBool : bool -> l
-  val create_LNum: float -> l
-  val create_LString : string -> l
-end = struct
-  type l = 
-  |LBool of bool 
-  |LInt of int
-  |LNum of float
-  |LString of string
-  |LNil
-  
-  let create_LBool b = LBool b
-  let create_LInt x = LInt x
-  let create_LNum x = LNum x
-  let create_LString x = LString x
-  let create_LNil () = LNil 
-
-  let lit_to_string l = 
-  match l with
-  |LBool b -> string_of_bool b
-  |LInt x -> string_of_int x
-  |LNum x -> string_of_float x
-  |LString s -> s
-  |LNil -> "NIL"
-end
 
 type tokenType = (*Begin with single char ones*) |Left_bracket
-| Right_bracket | Left_curly | Right_curly
+|Right_bracket | Left_curly | Right_curly
 |Comma | Dot | Minus | Plus | Semicolon | Slash | Asterix 
 (*Then single or double chars*) |Not | Not_Equal | Equal 
 |Equal_equal | Greater | Greater_equal
@@ -77,3 +42,39 @@ let print_tokens tokens = let string_list = List.map token_to_string tokens in
   | [] -> print_endline ""
   | s::tl -> print_endline (s ^ "\n"); print_list tl;
   in print_list string_list
+
+
+
+
+let compare operator left right exn = let open Lit in 
+  match operator with
+  | Less -> let res = 
+    match (left,right) with
+    | (LInt x, LInt y) -> LBool (x<y)
+    | (LInt x, LNum y) -> LBool (float_of_int x < y)
+    | (LNum x, LInt y) -> LBool (x < float_of_int y)
+    | _ -> raise exn
+    in res
+  | Less_equal -> let res = 
+    match (left,right) with
+    | (LInt x, LInt y) -> LBool (x <= y)
+    | (LInt x, LNum y) -> LBool (float_of_int x <= y)
+    | (LNum x, LInt y) -> LBool (x <= float_of_int y)
+    | _ -> raise exn
+    in res
+  | Greater -> let res = 
+    match (left,right) with
+    | (LInt x, LInt y) -> LBool (x> y)
+    | (LInt x, LNum y) -> LBool (float_of_int x > y)
+    | (LNum x, LInt y) -> LBool (x > float_of_int y)
+    | _ -> raise exn
+    in res
+  | Greater_equal -> let res = 
+    match (left,right) with
+    | (LInt x, LInt y) -> LBool (x >= y)
+    | (LInt x, LNum y) -> LBool (float_of_int x >= y)
+    | (LNum x, LInt y) -> LBool (x >= float_of_int y)
+    | _ -> raise exn
+    in res
+  | _ -> raise exn
+

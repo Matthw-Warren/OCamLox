@@ -1,6 +1,8 @@
 type parseError = {line:int ; lexeme : string ; message: string }
 exception ParseError of parseError
 
+type runtimeError = {token :Token.tokenType ; message:string}
+exception RuntimeError of runtimeError
 
 
 let had_Error = ref false

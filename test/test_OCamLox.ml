@@ -1,5 +1,5 @@
 
-let source = "\"testing\" - ( 2 - 1 ) * 3 == true"
+let source = "4 - ( 2 - 6 ) * 3 "
 
 let s = OCamLox.Lexer.init_scanner source
 
@@ -12,7 +12,11 @@ let p = OCamLox.Parser.init_parser tokens
 
 let ast  = OCamLox.Parser.get_ast_exp p
 
-let () = print_endline (OCamLox.Ast.expression_to_string ast)
+let out = OCamLox.Interpreter.evaluate ast
+
+let () = print_endline (OCamLox.Ast.expression_to_string ast); 
+        print_endline "\n"; print_endline (OCamLox.Lit.lit_to_string out);;
+
 
 
 

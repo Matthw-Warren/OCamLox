@@ -65,3 +65,20 @@ Equalilty Comparison Term Factor Unary Literal 1
 While this is what we're actually doing in the derivation 
 - this is quite tedious!? - but perhaps worth it!*)
 
+
+
+# Interpreting
+
+We seem to run into a problem. A literal is a syntactic/textual representation of a value  - so '2' is a literal, while the actual value 2 is the number 2 that the computer works with. 
+
+I suppose at our level - because we're using ocaml to do all the underlying computation and memory allocation for us - there is essentially no difference - so I can just replace the idea of a value by a literal and not worry. 
+
+A problem we run across is that to 'evaluate a literal' - say had a function lit_to_val would have to allow for different types in the output. 
+
+I don't think we need to worry about this low level here - again, ocaml is doing the actual evaluation for us and such.
+
+Java apparently also has these problems- but he just uses the Object class to kinda cheat. We could do the same with OCaml? But seeing as we already have made the type Lit in the Token module - there is no need!
+
+Moreover - its cleaner due to the pattern matching. Rather than using 'instanceof' or something of this vein - we can just pattern match the constructors for Token.Lit.l!
+
+Super janky at the moment for evaluation of these expressions. 
