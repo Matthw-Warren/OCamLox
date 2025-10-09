@@ -51,6 +51,7 @@ let compare operator left right exn = let open Lit in
   | Less -> let res = 
     match (left,right) with
     | (LInt x, LInt y) -> LBool (x<y)
+    | (LNum x, LNum y) -> LBool (x<y)
     | (LInt x, LNum y) -> LBool (float_of_int x < y)
     | (LNum x, LInt y) -> LBool (x < float_of_int y)
     | _ -> raise exn
@@ -58,6 +59,7 @@ let compare operator left right exn = let open Lit in
   | Less_equal -> let res = 
     match (left,right) with
     | (LInt x, LInt y) -> LBool (x <= y)
+    | (LNum x, LNum y) -> LBool (x <= y)
     | (LInt x, LNum y) -> LBool (float_of_int x <= y)
     | (LNum x, LInt y) -> LBool (x <= float_of_int y)
     | _ -> raise exn
@@ -65,6 +67,7 @@ let compare operator left right exn = let open Lit in
   | Greater -> let res = 
     match (left,right) with
     | (LInt x, LInt y) -> LBool (x> y)
+    | (LNum x, LNum y) -> LBool (x> y)
     | (LInt x, LNum y) -> LBool (float_of_int x > y)
     | (LNum x, LInt y) -> LBool (x > float_of_int y)
     | _ -> raise exn
@@ -72,6 +75,7 @@ let compare operator left right exn = let open Lit in
   | Greater_equal -> let res = 
     match (left,right) with
     | (LInt x, LInt y) -> LBool (x >= y)
+    | (LNum x, LNum y) -> LBool (x >= y)
     | (LInt x, LNum y) -> LBool (float_of_int x >= y)
     | (LNum x, LInt y) -> LBool (x >= float_of_int y)
     | _ -> raise exn

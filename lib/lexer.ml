@@ -103,7 +103,8 @@ let is_alphanum x = is_digit x || is_alpha x
 let rec scan_num scanner = 
   let c = get_char scanner in 
   match c with
-  |None| Some ' '| Some '\n' -> scanner
+  |None| Some ' '| Some '\n' | Some '+'| Some '-' | Some '*'|Some ')'
+  |Some '/'| Some ';'|Some '<' | Some '>'| Some '=' | Some '!' -> scanner
   |Some '.' -> 
   let dotcase scanner = 
     match peek_next scanner with
@@ -125,7 +126,9 @@ let add_num scanner =
 let rec scan_word scanner = 
   let c = get_char scanner in 
   match c with
-  | Some ' '|  Some '\n' | None -> scanner
+  | Some ' '|  Some '\n' | Some '^'| Some '-' | Some '*' 
+  |Some '/'| Some ';'|Some '<' | Some '>'| Some '=' | Some '!' | Some ')'
+  |None -> scanner
   | Some x when is_alphanum x -> scan_word (advance_scanner scanner)
   | Some c -> raise (UnexpectedCharacter (c, scanner.current))
 

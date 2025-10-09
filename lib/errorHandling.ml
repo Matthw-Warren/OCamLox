@@ -1,7 +1,9 @@
 type parseError = {line:int ; lexeme : string ; message: string }
+[@@deriving show]
 exception ParseError of parseError
 
-type runtimeError = {token :Token.tokenType ; message:string}
+type runtimeError = {token_type :Token.tokenType ; message:string}
+[@@deriving show]
 exception RuntimeError of runtimeError
 
 
@@ -21,4 +23,6 @@ let parse_error token message = let open Token in
   error token message; 
   ParseError {line = token.line; lexeme = token.lexeme; message = message}
 
-  
+let runtime_error token message = let open Token in 
+  error token message; 
+  RuntimeError {token_type = token.token_type; message = message}

@@ -66,6 +66,10 @@ While this is what we're actually doing in the derivation
 - this is quite tedious!? - but perhaps worth it!*)
 
 
+Think is okay at the moment - should we be advancing when we have seen the semicolon/Eof - no I think we already have!
+
+
+
 
 # Interpreting
 
