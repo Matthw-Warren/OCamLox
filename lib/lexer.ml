@@ -100,23 +100,26 @@ let is_alphanum x = is_digit x || is_alpha x
 
 
 
-let rec scan_num scanner = 
+let rec scan_num scanner seen_dot = 
   let c = get_char scanner in 
   match c with
   |None| Some ' '| Some '\n' | Some '+'| Some '-' | Some '*'|Some ')'
   |Some '/'| Some ';'|Some '<' | Some '>'| Some '=' | Some '!' -> scanner
-  |Some '.' -> 
+  |Some '.' -> if not seen_dot then
   let dotcase scanner = 
     match peek_next scanner with
     |None -> raise (UnexpectedCharacter ('.', scanner.line))
-    |Some x when (is_digit x || x = ' ' || x = '\n') -> scan_num( advance_scanner scanner)
+    |Some x when (is_digit x || x = ' ' || x = '\n') -> scan_num( advance_scanner scanner) true
     |Some x -> raise (UnexpectedCharacter (x, scanner.line))
   in dotcase scanner
-  |Some c when is_digit c -> scan_num (advance_scanner scanner)
+  else raise (UnexpectedCharacter ('.', scanner.line ) )
+  |Some c when is_digit c -> scan_num (advance_scanner scanner) seen_dot
   |Some c -> raise (UnexpectedCharacter (c, scanner.line))
 
+
+
 let add_num scanner = 
-  let scanner = scan_num scanner in
+  let scanner = scan_num scanner false in
   let numstring = String.sub scanner.source (scanner.start) (scanner.current - scanner.start) 
     in let tok = {token_type = Number; lexeme=  numstring; 
     line = scanner.line; literal= Lit.create_LNum (float_of_string numstring)}

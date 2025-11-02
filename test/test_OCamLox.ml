@@ -1,5 +1,5 @@
 
-let source = " cheese; "
+let source = " 12.1 + 2 ; "
 
 let s = OCamLox.Lexer.init_scanner source
 
