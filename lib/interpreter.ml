@@ -36,6 +36,7 @@ let rec evaluate_exp exp = let open Expressions in let open Token in
       | Minus -> Lit.minus (Lit.LInt 0) x (ErrorHandling.RuntimeError {token_type = s; message = "type error"})
       | t -> raise (ErrorHandling.RuntimeError {token_type = t; message = "Invalid Token in Binary expression"})
     in res
+  | Variable tok -> tok.literal
 
 (*If we're making a REPL -> we don't to end the whole thing here,
  would just restart the loop*)

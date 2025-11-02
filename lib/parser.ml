@@ -121,6 +121,7 @@ and get_primary_exp parser  =
   let c = get_token_type parser in
   let parser = advance_parser parser in 
   match c with 
+  | Token.Identifier -> (Expressions.Variable (get_previous parser), parser)
   | Token.False -> (Expressions.Literal (Lit.LBool false), parser)
   | Token.True -> (Expressions.Literal (Lit.LBool true), parser)
   | Token.Nil -> (Expressions.Literal Lit.LNil, parser)
@@ -156,12 +157,25 @@ let rec synchronise parser = let open Token in
 let rec get_stmt parser = 
   let t = get_token_type parser in 
   match t with
+  | Token.Var -> get_var_stmt (advance_parser parser)
   | Token.Print -> get_print_stmt (advance_parser parser)
   | _ -> let (exp, parser) = get_exp parser 
     in (Statements.ExpStmt exp, parser)
   
-and get_print_stmt parser = let (exp, parser) = get_exp parser in (Statements.PrintStmt exp, parser)
- 
+and get_print_stmt parser = let (exp, parser) = get_exp parser in
+   (Statements.PrintStmt exp, parser)
+
+and get_var_stmt parser = let (exp, parser) = get_exp parser in
+match exp with 
+| Expressions.Binary {left; operator; right} -> let stmt = 
+  match (left, operator) with 
+  | (Expressions.Variable t, Token.Equal) -> (Statements.VarDecl {id = t ; value = Some right}, parser)
+  | _ -> raise (ErrorHandling.ParseError {line = -1;lexeme = "BLAH"; message = "Unexpected tokens after Var keyword"})
+  in stmt
+| Expressions.Variable tok -> (Statements.VarDecl {id = tok; value = None}, parser)
+| _ -> raise 
+  (ErrorHandling.parse_error {token_type = Token.Var; lexeme = "var";
+    line = -1; literal = Lit.LNil } "Unexpected tokens after Var keyword" )
 
 
 

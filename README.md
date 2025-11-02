@@ -14,7 +14,7 @@ Current things to fix
 
 -Add in comma operators for expression blocks
 -Replace Temp errors with better error handling.
-
+- I think perhaps fixing error handing should be at the top of my list - stop just putting things off.
 
 
 ## Interpreter

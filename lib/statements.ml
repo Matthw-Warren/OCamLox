@@ -2,6 +2,7 @@
 type stmt = ExpStmt of Expressions.exp 
 | PrintStmt of Expressions.exp  
 | Stmt of {first: Expressions.exp; second : stmt}
+| VarDecl of {id : Token.token ; value : Expressions.exp option }
 | Empty
 
 

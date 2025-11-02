@@ -1,6 +1,7 @@
 
 type exp = 
 | Literal of Lit.l
+| Variable of Token.token
 | Unary of {symbol : Token.tokenType ; operand: exp }
 | Binary of {left: exp; operator : Token.tokenType ; right : exp}
 | Grouping of exp
@@ -26,6 +27,7 @@ let rec expression_to_string e = let open Token in
         | Slash -> " / " | _ -> raise UnexpectedOperator in
          "(" ^ s ^  expression_to_string left ^ " "^ expression_to_string right ^ ")"
     | Grouping e ->  "(" ^ "group" ^  expression_to_string e ^ ")"
+    | Variable t -> token_to_string t
 
 
 

@@ -1,5 +1,5 @@
 
-let source = "3+4 ; 2 ; (3 - 2 + 3 * 4 ); print 3 ;"
+let source = " cheese; "
 
 let s = OCamLox.Lexer.init_scanner source
 
